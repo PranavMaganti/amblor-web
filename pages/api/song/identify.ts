@@ -45,12 +45,10 @@ export default async function handler(
     return;
   }
 
-  console.log(req.headers.authorization);
-
   const user = await supabase.auth.api.getUser(
     req.headers.authorization.replace("Bearer ", "")
   );
-  
+
   if (user.error) {
     console.log(user.error);
     res.status(401).json({ message: "Invalid Authorization header" });
@@ -59,10 +57,12 @@ export default async function handler(
 
   const spotifyApi = await setupSpotifyApiClient();
   const query = req.query as UnmatchedTrack;
+  console.log(query);
   const searchResults = await spotifyApi.searchTracks(
     `track:${getCleanTitle(query.name)} artist:${getMainArtist(query.artist)}`,
     { limit: 1 }
   );
+  console.log(searchResults);
 
   const tracks = searchResults.body.tracks?.items;
   if (!tracks || tracks.length === 0) {
@@ -109,5 +109,5 @@ function getCleanTitle(title: string): string {
 }
 
 function getMainArtist(artistName: string): string {
-  return artistName.split("&,")[0];
+  return artistName.split(",")[0];
 }
