@@ -105,9 +105,12 @@ async function setupSpotifyApiClient() {
 }
 
 function getCleanTitle(title: string): string {
-  return title.replace(/\((feat.|From)(.*)\)/, "").trim();
+  return title
+    .replace(/\((feat.|From)(.*)\)/, "")
+    .replace("'", "")
+    .trim();
 }
 
 function getMainArtist(artistName: string): string {
-  return artistName.split(",")[0];
+  return artistName.replace("'", "").split(",")[0];
 }
