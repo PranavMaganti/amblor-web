@@ -21,6 +21,19 @@ type Track = {
   album: Album;
   artists: Artist[];
   preview_url: string | null;
+  duration: number;
+  key: number;
+  mode: number;
+  tempo: number;
+  time_signature: number;
+  acousticness: number;
+  danceability: number;
+  energy: number;
+  instrumentalness: number;
+  liveness: number;
+  loudness: number;
+  speechiness: number;
+  valence: number;
 };
 
 type UnmatchedTrack = {
@@ -36,24 +49,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Track | ErrorMessage>
 ) {
-  const supabaseKey = process.env.SUPABASE_KEY ?? "";
-  const supabaseUrl = "https://rbtjlwyltzlpkrjzhqgs.supabase.co";
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  // const supabaseKey = process.env.SUPABASE_KEY ?? "";
+  // const supabaseUrl = "https://rbtjlwyltzlpkrjzhqgs.supabase.co";
+  // const supabase = createClient(supabaseUrl, supabaseKey);
 
-  if (!req.headers.authorization) {
-    res.status(401).json({ message: "Missing Authorization header" });
-    return;
-  }
+  // if (!req.headers.authorization) {
+  //   res.status(401).json({ message: "Missing Authorization header" });
+  //   return;
+  // }
 
-  const user = await supabase.auth.api.getUser(
-    req.headers.authorization.replace("Bearer ", "")
-  );
+  // const user = await supabase.auth.api.getUser(
+  //   req.headers.authorization.replace("Bearer ", "")
+  // );
 
-  if (user.error) {
-    console.log(user.error);
-    res.status(401).json({ message: "Invalid Authorization header" });
-    return;
-  }
+  // if (user.error) {
+  //   console.log(user.error);
+  //   res.status(401).json({ message: "Invalid Authorization header" });
+  //   return;
+  // }
 
   const spotifyApi = await setupSpotifyApiClient();
   const query = req.query as UnmatchedTrack;
@@ -75,6 +88,8 @@ export default async function handler(
   const artistResults = await spotifyApi.getArtists(artistsIds);
   const artists = artistResults.body.artists;
 
+  const trackAnalysys = await spotifyApi.getAudioFeaturesForTrack(track.id);
+
   res.status(200).json({
     id: track.id,
     name: track.name,
@@ -90,6 +105,19 @@ export default async function handler(
       genres: artist.genres,
     })),
     preview_url: track.preview_url,
+    duration: trackAnalysys.body.duration_ms,
+    key: trackAnalysys.body.key,
+    mode: trackAnalysys.body.mode,
+    tempo: trackAnalysys.body.tempo,
+    time_signature: trackAnalysys.body.time_signature,
+    acousticness: trackAnalysys.body.acousticness,
+    danceability: trackAnalysys.body.danceability,
+    energy: trackAnalysys.body.energy,
+    instrumentalness: trackAnalysys.body.instrumentalness,
+    liveness: trackAnalysys.body.liveness,
+    loudness: trackAnalysys.body.loudness,
+    speechiness: trackAnalysys.body.speechiness,
+    valence: trackAnalysys.body.valence,
   });
 }
 
